@@ -8,7 +8,7 @@ jobs:
     name: Riivolution
     runs-on: ubuntu-latest
     container:
-      image: devkitpro/devkitppc:20210726
+      image: devkitpro/devkitppc:20250727
     steps:
     - uses: actions/checkout@v5
     - run: |
@@ -63,7 +63,7 @@ jobs:
         install: >-
           base-devel gcc python-yaml zip unzip python
           wii-dev ppc-portlibs wii-portlibs devkitARM
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - run: |
         DEVKITPRO=/opt/devkitpro DEVKITPPC=$DEVKITPRO/devkitPPC DEVKITARM=$DEVKITPRO/devkitARM \
         make launcher -j
