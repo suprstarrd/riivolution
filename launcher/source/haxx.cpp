@@ -1573,8 +1573,12 @@ static bool do_exploit()
 
 	printf("Grabbin' HAXX\n");
 
-	if (IOS_GetVersion() != (u32)HAXX_IOS /* || (ios_rev != 5663 && ios_rev != 5662 && ios_rev != 3869 && ios_rev != 5919) */)
+	int macaddr_fd = IOS_Open("/title/00000001/00000002/data/macaddr.bin", IPC_OPEN_READ);
+	if (IOS_GetVersion() != (u32)HAXX_IOS || (ios_rev != 5663 && ios_rev != 5662 && ios_rev != 3869 && ios_rev != 5919 && (ios_rev != 31519 && macaddr_fd >= 0)))
 	{
+		if (macaddr_fd >= 0) {
+			IOS_Close(macaddr_fd);
+		}
 		printf("Wrong IOS version (%08x). Update IOS%d to the latest version.\n", read32(0x3140), (u32)HAXX_IOS);
 		return false;
 	}

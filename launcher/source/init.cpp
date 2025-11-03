@@ -149,7 +149,7 @@ void Initialise()
 			if (!PressA())
 				exit(0);
 			approach = INSTALL_APPROACH_UPDATE;
-		} else if (2 < 1) {
+		} else if (IOS_GetRevision() > HAXX_IOS_MAXIMUM) {
 			// Either cIOScrap (which will make the downgrade exploit fail) or a future update
 			printf("\tIOS%d must be downgraded to continue. Do you want to attempt this now?\n", (u32)HAXX_IOS);
 			if (!PressA())
