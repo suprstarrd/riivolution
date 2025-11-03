@@ -8,7 +8,7 @@ jobs:
     name: Riivolution
     runs-on: ubuntu-latest
     container:
-      image: devkitpro/devkitppc:20250727
+      image: devkitpro/devkitppc:20231110
     steps:
     - uses: actions/checkout@v5
     - run: |
@@ -26,7 +26,7 @@ jobs:
     name: RawkSD
     runs-on: ubuntu-latest
     container:
-      image: devkitpro/devkitppc:20250727
+      image: devkitpro/devkitppc:20231110
     steps:
     - uses: actions/checkout@v5
     - run: |
