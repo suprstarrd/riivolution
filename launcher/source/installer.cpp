@@ -262,7 +262,7 @@ static bool FakesignTMD(signed_blob* blob)
 	tmd* meta = (tmd*)SIGNATURE_PAYLOAD(blob);
 	u32 size = TMD_SIZE(meta);
 	for(u32 fill = 0; fill < 0xFFFF; fill++) {
-		meta->fill2 = fill;
+		meta->fill3 = fill;
 		sha1 hash; SHA1((u8*)meta, size, hash);
 
 		if (hash[0] == 0)
@@ -485,7 +485,10 @@ int InstallChannel()
 
 	if (metatik && metatik->devicetype) {
 		// assume the ticket also contains a valid ECC public keypair
-		ES_GetDeviceID(&metatik->devicetype);
+		u32 devicetype;
+		if (ES_GetDeviceID(&devicetype) >= 0) {
+			metatik->devicetype = devicetype;
+		}
 	}
 
 	if (!forge_sig((u8*)ticket, banner_tik_dat_size) || !forge_sig((u8*)meta, 0x1e4 + 0x24 * banner_count))

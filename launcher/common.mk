@@ -18,13 +18,23 @@ INCLUDES := $(SOURCE_DIR)/$(BUILD) $(SOURCE_DIR)/include $(LAUNCHER_DIR)/include
 						$(COMMON_DIR)/filemodule/include \
 						$(LAUNCHER_DIR)/lib/libxml2/include $(LAUNCHER_DIR)/lib/libxml++ $(LAUNCHER_DIR)/lib/libxml++/libxml++
 
-CFLAGS		=	-fdata-sections -ffunction-sections -g -O2 -Wall $(MACHDEP) $(INCLUDE)
+CFLAGS		=	-fdata-sections -ffunction-sections -g -O2 -Wall -Wno-deprecated-declarations -Wno-multistatement-macros $(MACHDEP) $(INCLUDE)
 CXXFLAGS	=	-Xassembler -aln=$@.lst $(CFLAGS)
 LDFLAGS		=	$(MACHDEP) -Wl,--gc-sections -Wl,-Map,$(notdir $@).map,--section-start,.init=$(INIT_ADDR) -T $(LAUNCHER_DIR)/lib/rvl.ld
+
+export DEBUGGER ?=
+export RETURN_TO_MENU ?=
+export FWRITE_PATCH ?=
 
 ifdef $(DEBUGGER)
 	MODULES += megamodule
 	CFLAGS += -DDEBUGGER=1
+endif
+ifdef $(RETURN_TO_MENU)
+	CFLAGS += -DRETURN_TO_MENU=1
+endif
+ifdef $(FWRITE_PATCH)
+	CFLAGS += -DFWRITE_PATCH=1
 endif
 
 RES_EXTS += ttf png ogg pcm dat dtb tpl xml
@@ -38,7 +48,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(SOURCEDIRS),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(TEXTURES),$(CURDIR)/$(dir))
-export DEPSDIR» :=» $(CURDIR)/$(BUILD)
+export DEPSDIR := $(CURDIR)/$(BUILD)
 
 $(DOLLZ3):
 	@$(HOSTMAKE) --no-print-directory -C $(LAUNCHER_DIR)/dollz3 dollz3.exe

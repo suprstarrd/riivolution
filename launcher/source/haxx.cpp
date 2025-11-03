@@ -2,6 +2,7 @@
 #include "launcher.h"
 #include "wdvd.h"
 #include "sha1.h"
+#include "init.h"
 
 #include <gccore.h>
 #include <wiiuse/wpad.h>
@@ -20,7 +21,7 @@ using std::vector;
 
 //#define BABELFISH
 
-#ifndef BABELFISH
+#if !defined(BABELFISH) && !defined(DEBUG_HAXX)
 #define printf(...)
 #endif
 
@@ -243,7 +244,9 @@ void Haxx_Mount(vector<int>* mounted)
 	if (ret >= 0) {
 		mounted->push_back(ret);
 		ToMount.push_back(ret);
+#ifndef DEBUG_HAXX
 		if (!hasdefault)
+#endif
 			File_SetLogFS(ret);
 
 		DEFAULT();
@@ -1123,6 +1126,9 @@ static void* prepare_new_kernel(u64 title)
 // remember any MEM2 data may be invalid after reloading IOS
 static void shutdown_for_reload()
 {
+#if DEBUG_HAXX && DEBUG_NET
+	Init_DebugConsole_Shutdown();
+#endif
 	ISFS_Deinitialize();
 	WPAD_Shutdown();
 	__IOS_ShutdownSubsystems();
@@ -1294,7 +1300,7 @@ static int load_module_code(u8 *module_code, u8 *module_end)
 
 	es_fd = IOS_Open("/dev/es", 0);
 	if (es_fd<0) {
-		if (dec != module_code);
+		if (dec != module_code)
 			free(dec);
 		return 0;
 	}
@@ -1306,7 +1312,7 @@ static int load_module_code(u8 *module_code, u8 *module_end)
 	{
 		ISFS_Delete(LOAD_MODULE_PATH);
 		IOS_Close(es_fd);
-		if (dec != module_code);
+		if (dec != module_code)
 			free(dec);
 		return 0;
 	}
@@ -1567,8 +1573,12 @@ static bool do_exploit()
 
 	printf("Grabbin' HAXX\n");
 
-	if (IOS_GetVersion() != (u32)HAXX_IOS || (ios_rev != 5663 && ios_rev != 5662 && ios_rev != 3869 && ios_rev != 5919))
+	int macaddr_fd = IOS_Open("/title/00000001/00000002/data/macaddr.bin", IPC_OPEN_READ);
+	if (IOS_GetVersion() != (u32)HAXX_IOS || (ios_rev != 5663 && ios_rev != 5662 && ios_rev != 3869 && ios_rev != 5919 && (ios_rev != 31519 && macaddr_fd >= 0)))
 	{
+		if (macaddr_fd >= 0) {
+			IOS_Close(macaddr_fd);
+		}
 		printf("Wrong IOS version (%08x). Update IOS%d to the latest version.\n", read32(0x3140), (u32)HAXX_IOS);
 		return false;
 	}
@@ -1630,6 +1640,9 @@ static bool do_exploit()
 			free(new_ios);
 			es_fd = 0;
 			recover_from_reload((u32)HAXX_IOS);
+#if DEBUG_HAXX && DEBUG_NET
+			Init_DebugConsole();
+#endif
 			if (IOS_GetVersion() != (u32)HAXX_IOS || IOS_GetRevision() != ios_rev+1) {
 				printf("New IOS Version is incorrect, %08X\n", IOS_GetVersion());
 				patch_failed = 1;
@@ -1770,6 +1783,9 @@ static void IOS_ReloadwithAHB(u32 ios_version)
 	printf("Reloading IOS %d...\n", ios_version);
 	IOS_ReloadIOS(ios_version);
 	printf("Done.\n");
+#if DEBUG_HAXX && DEBUG_NET
+	Init_DebugConsole();
+#endif
 }
 
 /******* BEGIN SIGNATURE CHECKING STUF ******/

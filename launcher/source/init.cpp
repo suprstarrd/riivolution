@@ -14,10 +14,8 @@
 #include "installer.h"
 #include "wdvd.h"
 #include "files.h"
+#include "init.h"
 
-extern "C" void Init_DebugConsole(int use_net);
-
-vu16* const _memReg = (vu16*)0xCC004000;
 extern u8 _start[], __RO_END[];
 
 u32 is_wiiu;
@@ -52,13 +50,11 @@ void PressHome()
 		WPAD_ButtonsDown(3)) & WPAD_BUTTON_HOME));
 }
 
-static volatile int ShutdownParam;
+static volatile int ShutdownParam = 0;
 
 static void CallbackReset(u32 a, void* b)
 {
 	ShutdownParam = SYS_RETURNTOMENU;
-	_memReg[16] = 0;
-
 }
 
 static void CallbackPoweroffWiimote(int chan)
@@ -116,33 +112,16 @@ void CheckShutdown()
 	}
 }
 
-void die()
-{
-	*(vu32*)0xCD800070 &= ~1;
-	*(int*)0xCC003024 = ShutdownParam;
-}
-
 static void fix_mem_hdlr()
 {
-	ShutdownParam = 0;
-	IRQ_Request(IRQ_MEM3, (raw_irq_handler_t)die, NULL);
 	SYS_ProtectRange(SYS_PROTECTCHAN3, _start, __RO_END-_start, SYS_PROTECTREAD);
-	_memReg[16] = ShutdownParam;
 }
 
 u32 MALLOC_MEM2 = 1;
 enum { INSTALL_APPROACH_NOTHING = 0, INSTALL_APPROACH_UPDATE, INSTALL_APPROACH_DOWNGRADE };
-
 void Initialise()
 {
-#if 1
-	ShutdownParam = SYS_POWEROFF;
-
-	IRQ_Request(IRQ_MEM3, (raw_irq_handler_t)fix_mem_hdlr, NULL);
-	SYS_ProtectRange(SYS_PROTECTCHAN3, (void*)0x80000000, 0x8000, SYS_PROTECTREAD);
-#else
-	ShutdownParam = 0;
-#endif
+	fix_mem_hdlr();
 
 	is_wiiu = 0;
 	if (ES_GetDeviceID(&is_wiiu)<0 || is_wiiu >= 0x20000000)
@@ -214,8 +193,7 @@ void Initialise()
 		}
 	}
 
-	// change parameter to redirect stdout/stderr over wifi
-	Init_DebugConsole(0);
+	Init_DebugConsole();
 
 	SetupPads();
 	InitAudio();
