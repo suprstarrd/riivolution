@@ -37,7 +37,7 @@ ifdef $(FWRITE_PATCH)
 	CFLAGS += -DFWRITE_PATCH=1
 endif
 
-RES_EXTS += ttf png ogg pcm dat tpl xml
+RES_EXTS += ttf png ogg pcm dat dtb tpl xml
 BIN_EXTS += $(RES_EXTS)
 
 HOSTMAKE := env -u AS -u CC -u CXX -u LD -u AR -u OBJCOPY -u STRIP -u NM -u RANLIB $(MAKE)
